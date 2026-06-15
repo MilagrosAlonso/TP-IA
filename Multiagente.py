@@ -4,8 +4,7 @@
   "metadata": {
     "colab": {
       "provenance": [],
-      "toc_visible": true,
-      "authorship_tag": "ABX9TyMjB13hukj1cSu/IOBH4wjZ",
+      "authorship_tag": "ABX9TyMLX4ExIfzI5apVaiDFGYH/",
       "include_colab_link": true
     },
     "kernelspec": {
@@ -30,7 +29,7 @@
     {
       "cell_type": "markdown",
       "metadata": {
-        "id": "-mudhvIaV5Yi"
+        "id": "m_ij4rG4Z2Js"
       },
       "source": [
         "# 🤖 Pipeline de 3 Agentes Inteligentes\n",
@@ -50,7 +49,7 @@
     {
       "cell_type": "markdown",
       "metadata": {
-        "id": "GhMMel3GV5Yj"
+        "id": "foOAwaE-Z2Jt"
       },
       "source": [
         "## 📦 Instalación de dependencias"
@@ -58,23 +57,23 @@
     },
     {
       "cell_type": "code",
-      "execution_count": 1,
+      "execution_count": null,
       "metadata": {
-        "id": "fv9diDSoV5Yj",
         "colab": {
           "base_uri": "https://localhost:8080/"
         },
-        "outputId": "7c435186-978a-464e-80cd-e17d7cb5e68f"
+        "id": "6Xlz7e1PZ2Jt",
+        "outputId": "2e337840-6827-42f2-e06a-65de604311a5"
       },
       "outputs": [
         {
           "output_type": "stream",
           "name": "stdout",
           "text": [
-            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m2.4/2.4 MB\u001b[0m \u001b[31m19.2 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
-            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m1.0/1.0 MB\u001b[0m \u001b[31m23.8 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
-            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m554.9/554.9 kB\u001b[0m \u001b[31m13.7 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
-            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m73.1/73.1 kB\u001b[0m \u001b[31m2.1 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25l   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m0.0/2.4 MB\u001b[0m \u001b[31m?\u001b[0m eta \u001b[36m-:--:--\u001b[0m\r\u001b[2K   \u001b[91m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[91m╸\u001b[0m \u001b[32m2.4/2.4 MB\u001b[0m \u001b[31m153.7 MB/s\u001b[0m eta \u001b[36m0:00:01\u001b[0m\r\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m2.4/2.4 MB\u001b[0m \u001b[31m59.3 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25h\u001b[?25l   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m0.0/1.0 MB\u001b[0m \u001b[31m?\u001b[0m eta \u001b[36m-:--:--\u001b[0m\r\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m1.0/1.0 MB\u001b[0m \u001b[31m43.9 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m554.9/554.9 kB\u001b[0m \u001b[31m30.7 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m73.1/73.1 kB\u001b[0m \u001b[31m4.7 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
             "\u001b[?25h\u001b[31mERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.\n",
             "google-colab 1.0.0 requires requests==2.32.4, but you have requests 2.34.2 which is incompatible.\u001b[0m\u001b[31m\n",
             "\u001b[0m"
@@ -88,7 +87,7 @@
     {
       "cell_type": "markdown",
       "metadata": {
-        "id": "oPDD4T-xV5Yk"
+        "id": "h83ZUaWmZ2Ju"
       },
       "source": [
         "## 🔑 Configuración de API Key"
@@ -96,13 +95,13 @@
     },
     {
       "cell_type": "code",
-      "execution_count": 2,
+      "execution_count": null,
       "metadata": {
         "colab": {
           "base_uri": "https://localhost:8080/"
         },
-        "id": "WaENqvIOV5Yk",
-        "outputId": "5f590fd2-1bce-4076-b427-16d9505d37bb"
+        "id": "o3gCcs6BZ2Ju",
+        "outputId": "7e161fcf-64a6-41b3-93cc-0dde78f71a14"
       },
       "outputs": [
         {
@@ -130,7 +129,7 @@
     {
       "cell_type": "markdown",
       "metadata": {
-        "id": "c-3fiou7V5Yk"
+        "id": "v-lTpqhTZ2Ju"
       },
       "source": [
         "## 📊 Generación del Dataset CSV (500+ filas)"
@@ -138,14 +137,14 @@
     },
     {
       "cell_type": "code",
-      "execution_count": 3,
+      "execution_count": null,
       "metadata": {
         "colab": {
           "base_uri": "https://localhost:8080/",
           "height": 268
         },
-        "id": "OizjdEp_V5Yk",
-        "outputId": "e41872d5-2370-47cb-d85d-c362ad9c24d4"
+        "id": "aOoIz2Y5Z2Ju",
+        "outputId": "ae4db4ad-e0a0-4004-ca73-2cc4bf604929"
       },
       "outputs": [
         {
@@ -178,7 +177,7 @@
             ],
             "text/html": [
               "\n",
-              "  <div id=\"df-d390f56c-8286-4996-bdd2-0f4460c22147\" class=\"colab-df-container\">\n",
+              "  <div id=\"df-2e8ddf63-93e1-4d59-a3c5-514f504284e4\" class=\"colab-df-container\">\n",
               "    <div>\n",
               "<style scoped>\n",
               "    .dataframe tbody tr th:only-of-type {\n",
@@ -267,7 +266,7 @@
               "    <div class=\"colab-df-buttons\">\n",
               "\n",
               "  <div class=\"colab-df-container\">\n",
-              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-d390f56c-8286-4996-bdd2-0f4460c22147')\"\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-2e8ddf63-93e1-4d59-a3c5-514f504284e4')\"\n",
               "            title=\"Convert this dataframe to an interactive table.\"\n",
               "            style=\"display:none;\">\n",
               "\n",
@@ -319,12 +318,12 @@
               "\n",
               "    <script>\n",
               "      const buttonEl =\n",
-              "        document.querySelector('#df-d390f56c-8286-4996-bdd2-0f4460c22147 button.colab-df-convert');\n",
+              "        document.querySelector('#df-2e8ddf63-93e1-4d59-a3c5-514f504284e4 button.colab-df-convert');\n",
               "      buttonEl.style.display =\n",
               "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
               "\n",
               "      async function convertToInteractive(key) {\n",
-              "        const element = document.querySelector('#df-d390f56c-8286-4996-bdd2-0f4460c22147');\n",
+              "        const element = document.querySelector('#df-2e8ddf63-93e1-4d59-a3c5-514f504284e4');\n",
               "        const dataTable =\n",
               "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
               "                                                    [key], {});\n",
@@ -397,6 +396,145 @@
         "print(f\"✅ Dataset generado: {df_raw.shape[0]} filas × {df_raw.shape[1]} columnas\")\n",
         "print(f\"\\n📋 Primeras filas:\")\n",
         "df_raw.head(3)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "jwINb4TvZ2Jv"
+      },
+      "source": [
+        "---\n",
+        "## 🧹 AGENTE 1 — Normalizador\n",
+        "> **Función:** Limpia, imputa, escala y codifica el dataset"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "e53hmSVLZ2Jv"
+      },
+      "outputs": [],
+      "source": [
+        "import json\n",
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "from sklearn.preprocessing import StandardScaler, LabelEncoder\n",
+        "from langchain_mistralai import ChatMistralAI\n",
+        "from langchain.schema import HumanMessage, SystemMessage\n",
+        "\n",
+        "# ── LLM compartido ──────────────────────────────────────────────────────────\n",
+        "llm = ChatMistralAI(model=\"mistral-small-latest\", temperature=0.2)\n",
+        "\n",
+        "# ── Clase Agente 1 ──────────────────────────────────────────────────────────\n",
+        "class AgenteNormalizador:\n",
+        "    \"\"\"AGENTE 1: limpia, imputa, escala y codifica el dataset CSV.\"\"\"\n",
+        "\n",
+        "    def __init__(self, llm):\n",
+        "        self.llm = llm\n",
+        "        self.scaler = StandardScaler()\n",
+        "        self.label_encoders = {}\n",
+        "        self.reporte = {}\n",
+        "\n",
+        "    # ── 1. Análisis inicial con LLM ──────────────────────────────────────\n",
+        "    def analizar_con_llm(self, info_dataset: str) -> str:\n",
+        "        resp = self.llm.invoke([\n",
+        "            SystemMessage(content=\"Eres un experto en limpieza de datos. Respondé en español.\"),\n",
+        "            HumanMessage(content=f\"\"\"\n",
+        "Analizá este dataset y decí qué pasos de limpieza son necesarios:\n",
+        "{info_dataset}\n",
+        "Listá brevemente: columnas con nulos, columnas categóricas a codificar y columnas numéricas a escalar.\n",
+        "\"\"\")\n",
+        "        ])\n",
+        "        return resp.content\n",
+        "\n",
+        "    # ── 2. Limpieza e imputación ─────────────────────────────────────────\n",
+        "    def limpiar_e_imputar(self, df: pd.DataFrame) -> pd.DataFrame:\n",
+        "        df = df.copy()\n",
+        "        nulos_antes = df.isnull().sum().sum()\n",
+        "\n",
+        "        # Eliminar duplicados\n",
+        "        df.drop_duplicates(inplace=True)\n",
+        "\n",
+        "        # Imputar numéricos con mediana\n",
+        "        num_cols = df.select_dtypes(include=[np.number]).columns\n",
+        "        for col in num_cols:\n",
+        "            if df[col].isnull().sum() > 0:\n",
+        "                df[col].fillna(df[col].median(), inplace=True)\n",
+        "\n",
+        "        # Imputar categóricos con moda\n",
+        "        cat_cols = df.select_dtypes(include=['object']).columns\n",
+        "        for col in cat_cols:\n",
+        "            if df[col].isnull().sum() > 0:\n",
+        "                df[col].fillna(df[col].mode()[0], inplace=True)\n",
+        "\n",
+        "        self.reporte['nulos_antes'] = int(nulos_antes)\n",
+        "        self.reporte['nulos_despues'] = int(df.isnull().sum().sum())\n",
+        "        self.reporte['filas_finales'] = len(df)\n",
+        "        return df\n",
+        "\n",
+        "    # ── 3. Codificación de categóricas ──────────────────────────────────\n",
+        "    def codificar(self, df: pd.DataFrame, cols_categoricas: list) -> pd.DataFrame:\n",
+        "        df = df.copy()\n",
+        "        for col in cols_categoricas:\n",
+        "            if col in df.columns:\n",
+        "                le = LabelEncoder()\n",
+        "                df[col + '_enc'] = le.fit_transform(df[col].astype(str))\n",
+        "                self.label_encoders[col] = le\n",
+        "        self.reporte['columnas_codificadas'] = cols_categoricas\n",
+        "        return df\n",
+        "\n",
+        "    # ── 4. Escalado de numéricas ─────────────────────────────────────────\n",
+        "    def escalar(self, df: pd.DataFrame, cols_numericas: list) -> pd.DataFrame:\n",
+        "        df = df.copy()\n",
+        "        cols_existentes = [c for c in cols_numericas if c in df.columns]\n",
+        "        df[cols_existentes] = self.scaler.fit_transform(df[cols_existentes])\n",
+        "        self.reporte['columnas_escaladas'] = cols_existentes\n",
+        "        return df\n",
+        "\n",
+        "    # ── Pipeline completo ────────────────────────────────────────────────\n",
+        "    def ejecutar(self, ruta_csv: str) -> pd.DataFrame:\n",
+        "        print(\"=\"*60)\n",
+        "        print(\"🧹 AGENTE 1 — NORMALIZADOR\")\n",
+        "        print(\"=\"*60)\n",
+        "\n",
+        "        df = pd.read_csv(ruta_csv)\n",
+        "        print(f\"📥 Dataset cargado: {df.shape}\")\n",
+        "\n",
+        "        # Análisis LLM\n",
+        "        info = f\"Columnas: {list(df.columns)}\\nNulos por columna:\\n{df.isnull().sum().to_dict()}\\nTipos:\\n{df.dtypes.to_dict()}\"\n",
+        "        print(\"\\n🤖 Análisis del LLM:\")\n",
+        "        analisis = self.analizar_con_llm(info)\n",
+        "        print(analisis)\n",
+        "\n",
+        "        # Limpieza\n",
+        "        df = self.limpiar_e_imputar(df)\n",
+        "        print(f\"\\n✅ Imputación completada | Nulos antes: {self.reporte['nulos_antes']} → después: {self.reporte['nulos_despues']}\")\n",
+        "\n",
+        "        # Columnas a procesar\n",
+        "        cols_cat = ['categoria', 'region']\n",
+        "        cols_num = ['cantidad', 'precio_unitario', 'descuento_pct', 'costo',\n",
+        "                    'vendedor_exp_años', 'satisfaccion_cliente']\n",
+        "\n",
+        "        # Codificación\n",
+        "        df = self.codificar(df, cols_cat)\n",
+        "        print(f\"✅ Columnas codificadas: {cols_cat}\")\n",
+        "\n",
+        "        # Escalado\n",
+        "        df = self.escalar(df, cols_num)\n",
+        "        print(f\"✅ Columnas escaladas: {cols_num}\")\n",
+        "\n",
+        "        # Guardar dataset limpio\n",
+        "        df.to_csv('ventas_limpio.csv', index=False)\n",
+        "        print(f\"\\n💾 Dataset limpio guardado: ventas_limpio.csv ({df.shape})\")\n",
+        "        print(\"=\"*60)\n",
+        "\n",
+        "        return df, self.reporte\n",
+        "\n",
+        "# ── Ejecutar Agente 1 ────────────────────────────────────────────────────────\n",
+        "agente1 = AgenteNormalizador(llm)\n",
+        "df_limpio, reporte_ag1 = agente1.ejecutar('ventas_dataset.csv')"
       ]
     }
   ]
