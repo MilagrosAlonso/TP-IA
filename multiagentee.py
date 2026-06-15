@@ -80,3 +80,246 @@ print(f"\n Primeras filas:")
 df_raw.head(3)
 
 """---
+AGENTE 1 — Normalizador
+> **Función:** Limpia, imputa, escala y codifica el dataset
+"""
+
+import json
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from langchain_mistralai import ChatMistralAI
+from langchain_core.messages import HumanMessage, SystemMessage
+
+# ── LLM compartido ──────────────────────────────────────────────────────────
+llm = ChatMistralAI(model="mistral-small-latest", temperature=0.2)
+
+# ── Clase Agente 1 ──────────────────────────────────────────────────────────
+class AgenteNormalizador:
+    """AGENTE 1: limpia, imputa, escala y codifica el dataset CSV."""
+
+    def __init__(self, llm):
+        self.llm = llm
+        self.scaler = StandardScaler()
+        self.label_encoders = {}
+        self.reporte = {}
+
+    # ── 1. Análisis inicial con LLM ──────────────────────────────────────
+    def analizar_con_llm(self, info_dataset: str) -> str:
+        resp = self.llm.invoke([
+            SystemMessage(content="Eres un experto en limpieza de datos. Respondé en español."),
+            HumanMessage(content=f"""
+Analizá este dataset y decí qué pasos de limpieza son necesarios:
+{info_dataset}
+Listá brevemente: columnas con nulos, columnas categóricas a codificar y columnas numéricas a escalar.
+""")
+        ])
+        return resp.content
+
+    # ── 2. Limpieza e imputación ─────────────────────────────────────────
+    def limpiar_e_imputar(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        nulos_antes = df.isnull().sum().sum()
+
+        # Eliminar duplicados
+        df.drop_duplicates(inplace=True)
+
+        # Imputar numéricos con mediana
+        num_cols = df.select_dtypes(include=[np.number]).columns
+        for col in num_cols:
+            if df[col].isnull().sum() > 0:
+                df[col].fillna(df[col].median(), inplace=True)
+
+        # Imputar categóricos con moda
+        cat_cols = df.select_dtypes(include=['object']).columns
+        for col in cat_cols:
+            if df[col].isnull().sum() > 0:
+                df[col].fillna(df[col].mode()[0], inplace=True)
+
+        self.reporte['nulos_antes'] = int(nulos_antes)
+        self.reporte['nulos_despues'] = int(df.isnull().sum().sum())
+        self.reporte['filas_finales'] = len(df)
+        return df
+
+    # ── 3. Codificación de categóricas ──────────────────────────────────
+    def codificar(self, df: pd.DataFrame, cols_categoricas: list) -> pd.DataFrame:
+        df = df.copy()
+        for col in cols_categoricas:
+            if col in df.columns:
+                le = LabelEncoder()
+                df[col + '_enc'] = le.fit_transform(df[col].astype(str))
+                self.label_encoders[col] = le
+        self.reporte['columnas_codificadas'] = cols_categoricas
+        return df
+
+    # ── 4. Escalado de numéricas ─────────────────────────────────────────
+    def escalar(self, df: pd.DataFrame, cols_numericas: list) -> pd.DataFrame:
+        df = df.copy()
+        cols_existentes = [c for c in cols_numericas if c in df.columns]
+        df[cols_existentes] = self.scaler.fit_transform(df[cols_existentes])
+        self.reporte['columnas_escaladas'] = cols_existentes
+        return df
+
+    # ── Pipeline completo ────────────────────────────────────────────────
+    def ejecutar(self, ruta_csv: str) -> pd.DataFrame:
+        print("="*60)
+        print(" AGENTE 1 — NORMALIZADOR")
+        print("="*60)
+
+        df = pd.read_csv(ruta_csv)
+        print(f" Dataset cargado: {df.shape}")
+
+        # Análisis LLM
+        info = f"Columnas: {list(df.columns)}\nNulos por columna:\n{df.isnull().sum().to_dict()}\nTipos:\n{df.dtypes.to_dict()}"
+        print("\n Análisis del LLM:")
+        analisis = self.analizar_con_llm(info)
+        print(analisis)
+
+        # Limpieza
+        df = self.limpiar_e_imputar(df)
+        print(f"\n Imputación completada | Nulos antes: {self.reporte['nulos_antes']} → después: {self.reporte['nulos_despues']}")
+
+        # Columnas a procesar
+        cols_cat = ['categoria', 'region']
+        cols_num = ['cantidad', 'precio_unitario', 'descuento_pct', 'costo',
+                    'vendedor_exp_años', 'satisfaccion_cliente']
+
+        # Codificación
+        df = self.codificar(df, cols_cat)
+        print(f" Columnas codificadas: {cols_cat}")
+
+        # Escalado
+        df = self.escalar(df, cols_num)
+        print(f" Columnas escaladas: {cols_num}")
+
+        # Guardar dataset limpio
+        df.to_csv('ventas_limpio.csv', index=False)
+        print(f"\n Dataset limpio guardado: ventas_limpio.csv ({df.shape})")
+        print("="*60)
+
+        return df, self.reporte
+
+# ── Ejecutar Agente 1 ────────────────────────────────────────────────────────
+agente1 = AgenteNormalizador(llm)
+df_limpio, reporte_ag1 = agente1.ejecutar('ventas_dataset.csv')
+
+"""AGENTE 2 — Entrenador
+> **Función:** Aplica validación cruzada, entrena modelos y selecciona el mejor
+"""
+
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.metrics import (classification_report, confusion_matrix,
+                              accuracy_score, f1_score, roc_auc_score)
+import pickle
+
+class AgenteEntrenador:
+    """AGENTE 2: validación cruzada, entrena múltiples modelos y selecciona el mejor."""
+
+    def __init__(self, llm):
+        self.llm = llm
+        self.mejor_modelo = None
+        self.mejor_nombre = None
+        self.metricas = {}
+        self.reporte = {}
+
+    def seleccionar_features_con_llm(self, columnas: list) -> str:
+        resp = self.llm.invoke([
+            SystemMessage(content="Eres un experto en Machine Learning. Respondé en español."),
+            HumanMessage(content=f"""
+Tengo un dataset de ventas con estas columnas:
+{columnas}
+El TARGET es 'venta_exitosa' (binario: 0/1).
+¿Qué columnas usarías como features para clasificación? Justificá brevemente.
+""")
+        ])
+        return resp.content
+
+    def evaluar_modelos(self, X_train, y_train) -> dict:
+        """Validación cruzada de 3 modelos."""
+        modelos = {
+            'Logistic Regression': LogisticRegression(max_iter=1000, random_state=42),
+            'Random Forest':       RandomForestClassifier(n_estimators=100, random_state=42),
+            'Gradient Boosting':   GradientBoostingClassifier(n_estimators=100, random_state=42),
+        }
+        resultados = {}
+        print("\n Validación cruzada (5 folds):")
+        for nombre, modelo in modelos.items():
+            scores = cross_val_score(modelo, X_train, y_train, cv=5, scoring='f1')
+            resultados[nombre] = {
+                'modelo': modelo,
+                'cv_f1_mean': round(scores.mean(), 4),
+                'cv_f1_std':  round(scores.std(), 4),
+            }
+            print(f"  {nombre:25s} → F1 = {scores.mean():.4f} ± {scores.std():.4f}")
+        return resultados
+
+    def ejecutar(self, df: pd.DataFrame) -> tuple:
+        print("="*60)
+        print("  AGENTE 2 — ENTRENADOR")
+        print("="*60)
+
+        # Consulta al LLM
+        print("\n Recomendación de features del LLM:")
+        print(self.seleccionar_features_con_llm(list(df.columns)))
+
+        # Features definitivos
+        feature_cols = ['cantidad', 'precio_unitario', 'descuento_pct', 'costo',
+                        'vendedor_exp_años', 'satisfaccion_cliente',
+                        'categoria_enc', 'region_enc']
+        target_col = 'venta_exitosa'
+
+        feature_cols = [c for c in feature_cols if c in df.columns]
+        X = df[feature_cols]
+        y = df[target_col]
+
+        # Split
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, random_state=42, stratify=y
+        )
+        print(f"\n Train: {X_train.shape} | Test: {X_test.shape}")
+
+        # Validación cruzada
+        resultados = self.evaluar_modelos(X_train, y_train)
+
+        # Seleccionar mejor
+        mejor = max(resultados, key=lambda k: resultados[k]['cv_f1_mean'])
+        self.mejor_nombre = mejor
+        self.mejor_modelo = resultados[mejor]['modelo']
+        print(f"\n Mejor modelo: {mejor} (CV F1 = {resultados[mejor]['cv_f1_mean']})")
+
+        # Entrenamiento final
+        self.mejor_modelo.fit(X_train, y_train)
+        y_pred = self.mejor_modelo.predict(X_test)
+
+        # Métricas finales
+        self.metricas = {
+            'modelo_seleccionado':  mejor,
+            'accuracy':             round(accuracy_score(y_test, y_pred), 4),
+            'f1_score':             round(f1_score(y_test, y_pred), 4),
+            'roc_auc':              round(roc_auc_score(y_test, y_pred), 4),
+            'cv_f1_mean':           resultados[mejor]['cv_f1_mean'],
+            'cv_f1_std':            resultados[mejor]['cv_f1_std'],
+            'train_size':           len(X_train),
+            'test_size':            len(X_test),
+            'features':             feature_cols,
+            'todos_modelos':        {k: {'cv_f1_mean': v['cv_f1_mean'],
+                                         'cv_f1_std':  v['cv_f1_std']}
+                                     for k, v in resultados.items()},
+        }
+
+        print(f"\n Métricas en Test Set:")
+        print(f"  Accuracy : {self.metricas['accuracy']}")
+        print(f"  F1 Score : {self.metricas['f1_score']}")
+        print(f"  ROC AUC  : {self.metricas['roc_auc']}")
+        print(f"\n{classification_report(y_test, y_pred)}")
+
+        # Guardar modelo
+        with open('mejor_modelo.pkl', 'wb') as f:
+            pickle.dump(self.mejor_modelo, f)
+        print(" Modelo guardado: mejor_modelo.pkl")
+        print("="*60)
+
+        return self.mejor_modelo, self.metricas
+
