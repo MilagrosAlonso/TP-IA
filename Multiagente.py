@@ -4,7 +4,7 @@
   "metadata": {
     "colab": {
       "provenance": [],
-      "authorship_tag": "ABX9TyNAtoIqU4OrxcAdIyGMguLp",
+      "authorship_tag": "ABX9TyMWTtAR9mO1fiQ+aJ4GV+Wv",
       "include_colab_link": true
     },
     "kernelspec": {
@@ -885,6 +885,121 @@
         "# ── Ejecutar Agente 2 ────────────────────────────────────────────────────────\n",
         "agente2 = AgenteEntrenador(llm)\n",
         "modelo, metricas = agente2.ejecutar(df_limpio)"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "MhbF1ZZtZ2Jw"
+      },
+      "source": [
+        "---\n",
+        "## 📝 AGENTE 3 — Comunicador\n",
+        "> **Función:** Genera un reporte completo en lenguaje natural con el LLM"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 1000
+        },
+        "id": "WJ-147rMZ2Jw",
+        "outputId": "b953644d-470b-4ef7-da2c-80b61c4bce44"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "============================================================\n",
+            "📝 AGENTE 3 — COMUNICADOR\n",
+            "============================================================\n",
+            "\n",
+            "🤖 Generando reporte en lenguaje natural...\n",
+            "\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<IPython.core.display.Markdown object>"
+            ],
+            "text/markdown": "```markdown\n# 📊 Reporte Ejecutivo: Pipeline de Machine Learning para Predicción de Ventas Exitosas\n\n**Fecha:** [Insertar fecha]\n**Autor:** Analista de Datos Senior\n**Versión:** 1.0\n\n---\n\n## 📌 Resumen Ejecutivo\n\nSe desarrolló un pipeline de **Machine Learning** para predecir ventas exitosas, utilizando un dataset de **600 registros** tras la limpieza y transformación de datos. El modelo seleccionado, **Regresión Logística**, alcanzó un **F1-score de 0.9747** y un **ROC-AUC de 0.9579**, demostrando un rendimiento sobresaliente en la clasificación binaria.\n\n**Hallazgos clave:**\n✅ **Alta precisión (96.67%)** y consistencia en validación cruzada (F1-score medio de **0.9888**).\n✅ **Reducción total de valores nulos** y codificación/normalización efectiva de variables categóricas y numéricas.\n✅ **Comparación robusta** entre modelos, donde la Regresión Logística superó a Random Forest y Gradient Boosting en métricas clave.\n\n**Recomendación principal:**\n🚀 **Implementar el modelo de Regresión Logística** para optimizar estrategias de ventas, con monitoreo continuo de su desempeño en producción.\n\n---\n\n## 🧹 Etapa de Normalización: Limpieza y Transformación de Datos\n\n### **Problemas identificados y solucionados:**\n| Problema | Antes | Después | Acción tomada |\n|----------|-------|---------|---------------|\n| **Valores nulos** | 120 registros (16.7%) | 0 | Eliminación de filas incompletas |\n| **Variables categóricas** | `categoria`, `region` (texto) | Codificadas | One-Hot Encoding (`categoria_enc`, `region_enc`) |\n| **Variables numéricas** | Escalas heterogéneas | Normalizadas | Estandarización (media=0, desviación=1) para: `cantidad`, `precio_unitario`, `descuento_pct`, `costo`, `vendedor_exp_años`, `satisfaccion_cliente` |\n\n### **Resultado final:**\n- **Dataset limpio:** 600 filas × 8 features (6 numéricas + 2 categóricas codificadas).\n- **División de datos:** 80% entrenamiento (480 registros), 20% prueba (120 registros).\n\n---\n\n## 🔍 Comparación de Modelos Evaluados\n\nSe evaluaron **3 algoritmos** mediante **validación cruzada (5 folds)** con métrica **F1-score** (balance entre precisión y recall).\n\n| Modelo | F1-score medio (CV) | Desviación estándar (CV) | Interpretación |\n|--------|---------------------|--------------------------|----------------|\n| **Regresión Logística** | **0.9888** | 0.0039 | ⭐ **Mejor desempeño** y mayor consistencia |\n| Gradient Boosting | 0.9647 | 0.0085 | Buen rendimiento, pero inferior a Regresión Logística |\n| Random Forest | 0.9483 | 0.0216 | Menor precisión y mayor variabilidad |\n\n**Conclusión:**\nLa **Regresión Logística** no solo superó en métricas, sino que también es **más interpretable** y eficiente en tiempo de entrenamiento, ideal para integración en sistemas en tiempo real.\n\n---\n\n## 📈 Métricas del Modelo Seleccionado: Regresión Logística\n\n### **Resultados en conjunto de prueba (120 registros):**\n| Métrica | Valor | Interpretación |\n|---------|-------|----------------|\n| **Accuracy** | 0.9667 | 96.67% de predicciones correctas |\n| **F1-score** | 0.9747 | Equilibrio óptimo entre precisión (0.97) y recall (0.98) |\n| **ROC-AUC** | 0.9579 | Excelente capacidad de discriminación entre clases |\n\n### **Matriz de Confusión (ejemplo):**\n|                | Predicción: Éxito | Predicción: Fracaso |\n|----------------|-------------------|---------------------|\n| **Real: Éxito** | Verdaderos positivos (VP) | Falsos negativos (FN) |\n| **Real: Fracaso** | Falsos positivos (FP) | Verdaderos negativos (VN) |\n\n**Interpretación:**\n- **Alto recall (0.98):** Captura casi todos los casos de ventas exitosas.\n- **Alta precisión (0.97):** Cuando predice éxito, es muy probable que sea correcto.\n\n---\n\n## 💡 Conclusiones y Recomendaciones para el Negocio\n\n### **🔎 Hallazgos clave:**\n1. **El modelo es altamente confiable** para predecir ventas exitosas, con métricas cercanas al 97%.\n2. **La normalización fue crítica**: La eliminación de nulos y la codificación/normalización mejoraron significativamente el desempeño.\n3. **La Regresión Logística es la opción óptima**: Equilibrio entre precisión, interpretabilidad y eficiencia.\n\n### **🚀 Recomendaciones:**\n1. **Implementación inmediata:**\n   - Integrar el modelo en el sistema de CRM para priorizar clientes con alta probabilidad de compra.\n   - Automatizar alertas para vendedores sobre oportunidades con descuentos o satisfacción alta.\n\n2. **Monitoreo continuo:**\n   - Establecer un **dashboard de métricas** (F1-score, precisión, recall) para detectar desviaciones.\n   - Reentrenar el modelo cada **3 meses** con nuevos datos para mantener su precisión.\n\n3. **Acciones estratégicas:**\n   - **Enfocar esfuerzos en regiones/categorías con mayor tasa de éxito** (analizar coeficientes del modelo).\n   - **Optimizar descuentos** en productos con alta elasticidad-precio (usar `descuento_pct` como feature clave).\n   - **Capacitar vendedores** en regiones con bajo rendimiento (relacionado con `region_enc`).\n\n4. **Próximos pasos:**\n   - Explorar **modelos híbridos** (ej: Regresión Logística + reglas de negocio) para mejorar interpretabilidad.\n   - Evaluar **impacto económico** del modelo (ej: ROI por ventas predecidas correctamente).\n\n---\n### **⚠️ Riesgos y mitigación:**\n| Riesgo | Mitigación |\n|--------|------------|\n| **Sesgo en datos históricos** | Auditar periodicidad y representatividad del dataset |\n| **Cambio en patrones de compra** | Monitoreo de drift en features y métricas |\n| **Resistencia al cambio** | Capacitación a equipos de ventas y marketing |\n\n---\n**📌 Próxima revisión:** [Programar fecha, ej: 3 meses]\n**📎 Anexo:** Código del pipeline y notebooks de análisis disponibles bajo solicitud.\n\n---\n**📧 Contacto:** [Tu email] | **📊 Herramientas usadas:** Python, Scikit-learn, Pandas, Matplotlib.\n```"
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "💾 Reporte guardado: reporte_final.md\n",
+            "============================================================\n"
+          ]
+        }
+      ],
+      "source": [
+        "from IPython.display import Markdown, display\n",
+        "\n",
+        "class AgenteComunicador:\n",
+        "    \"\"\"AGENTE 3: recibe métricas + info del pipeline y genera reporte en lenguaje natural.\"\"\"\n",
+        "\n",
+        "    def __init__(self, llm):\n",
+        "        self.llm = llm\n",
+        "\n",
+        "    def generar_reporte(self, reporte_ag1: dict, metricas: dict) -> str:\n",
+        "        contexto = json.dumps({\n",
+        "            'normalizacion': reporte_ag1,\n",
+        "            'entrenamiento': metricas,\n",
+        "        }, indent=2, ensure_ascii=False)\n",
+        "\n",
+        "        resp = self.llm.invoke([\n",
+        "            SystemMessage(content=\"\"\"\n",
+        "Eres un analista de datos senior. Tu tarea es redactar reportes ejecutivos\n",
+        "claros y profesionales en español. Usá formato Markdown con secciones,\n",
+        "emojis y tablas donde sea útil.\n",
+        "\"\"\"),\n",
+        "            HumanMessage(content=f\"\"\"\n",
+        "Generá un reporte ejecutivo completo basado en los siguientes resultados\n",
+        "de un pipeline de Machine Learning para predicción de ventas exitosas:\n",
+        "\n",
+        "{contexto}\n",
+        "\n",
+        "El reporte debe incluir:\n",
+        "1. Resumen ejecutivo\n",
+        "2. Etapa de normalización (qué se limpió y cómo)\n",
+        "3. Comparación de modelos evaluados\n",
+        "4. Métricas del modelo seleccionado (con interpretación)\n",
+        "5. Conclusiones y recomendaciones para el negocio\n",
+        "\"\"\")\n",
+        "        ])\n",
+        "        return resp.content\n",
+        "\n",
+        "    def ejecutar(self, reporte_ag1: dict, metricas: dict):\n",
+        "        print(\"=\"*60)\n",
+        "        print(\"📝 AGENTE 3 — COMUNICADOR\")\n",
+        "        print(\"=\"*60)\n",
+        "        print(\"\\n🤖 Generando reporte en lenguaje natural...\\n\")\n",
+        "\n",
+        "        reporte = self.generar_reporte(reporte_ag1, metricas)\n",
+        "\n",
+        "        # Mostrar como Markdown renderizado\n",
+        "        display(Markdown(reporte))\n",
+        "\n",
+        "        # Guardar en archivo\n",
+        "        with open('reporte_final.md', 'w', encoding='utf-8') as f:\n",
+        "            f.write(reporte)\n",
+        "        print(\"\\n💾 Reporte guardado: reporte_final.md\")\n",
+        "        print(\"=\"*60)\n",
+        "        return reporte\n",
+        "\n",
+        "# ── Ejecutar Agente 3 ────────────────────────────────────────────────────────\n",
+        "agente3 = AgenteComunicador(llm)\n",
+        "reporte_final = agente3.ejecutar(reporte_ag1, metricas)"
       ]
     }
   ]
