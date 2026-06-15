@@ -1,0 +1,403 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "toc_visible": true,
+      "authorship_tag": "ABX9TyMjB13hukj1cSu/IOBH4wjZ",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/MilagrosAlonso/TP-IA/blob/main/Multiagente.py\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "-mudhvIaV5Yi"
+      },
+      "source": [
+        "# 🤖 Pipeline de 3 Agentes Inteligentes\n",
+        "\n",
+        "**Arquitectura:**\n",
+        "```\n",
+        "Dataset CSV\n",
+        "     ↓\n",
+        "AGENTE 1 - Normalizador  →  limpia, imputa, escala, codifica\n",
+        "     ↓ dataset limpio\n",
+        "AGENTE 2 - Entrenador    →  aplica validación, entrena, selecciona modelo\n",
+        "     ↓ métricas + modelo\n",
+        "AGENTE 3 - Comunicador   →  genera reporte en lenguaje natural\n",
+        "```"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "GhMMel3GV5Yj"
+      },
+      "source": [
+        "## 📦 Instalación de dependencias"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "id": "fv9diDSoV5Yj",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "7c435186-978a-464e-80cd-e17d7cb5e68f"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m2.4/2.4 MB\u001b[0m \u001b[31m19.2 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m1.0/1.0 MB\u001b[0m \u001b[31m23.8 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m554.9/554.9 kB\u001b[0m \u001b[31m13.7 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m73.1/73.1 kB\u001b[0m \u001b[31m2.1 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25h\u001b[31mERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.\n",
+            "google-colab 1.0.0 requires requests==2.32.4, but you have requests 2.34.2 which is incompatible.\u001b[0m\u001b[31m\n",
+            "\u001b[0m"
+          ]
+        }
+      ],
+      "source": [
+        "!pip install langchain langchain-community langchain-mistralai scikit-learn pandas numpy matplotlib seaborn -q"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "oPDD4T-xV5Yk"
+      },
+      "source": [
+        "## 🔑 Configuración de API Key"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 2,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "WaENqvIOV5Yk",
+        "outputId": "5f590fd2-1bce-4076-b427-16d9505d37bb"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "✅ API Key cargada desde Secrets\n"
+          ]
+        }
+      ],
+      "source": [
+        "import os\n",
+        "from google.colab import userdata\n",
+        "\n",
+        "# Opción 1: desde Colab Secrets (recomendado)\n",
+        "try:\n",
+        "    os.environ[\"MISTRAL_API_KEY\"] = userdata.get('MISTRAL_API_KEY')\n",
+        "    print(\"✅ API Key cargada desde Secrets\")\n",
+        "except:\n",
+        "    # Opción 2: manual\n",
+        "    os.environ[\"MISTRAL_API_KEY\"] = \"TU_API_KEY_AQUI\"\n",
+        "    print(\"⚠️ Ingresá tu API Key manualmente\")"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "c-3fiou7V5Yk"
+      },
+      "source": [
+        "## 📊 Generación del Dataset CSV (500+ filas)"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 3,
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 268
+        },
+        "id": "OizjdEp_V5Yk",
+        "outputId": "e41872d5-2370-47cb-d85d-c362ad9c24d4"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "✅ Dataset generado: 600 filas × 13 columnas\n",
+            "\n",
+            "📋 Primeras filas:\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "   id_venta       fecha  categoria  region  cantidad  precio_unitario  \\\n",
+              "0         1  2023-01-01  Alimentos    Este      46.0           385.02   \n",
+              "1         2  2023-01-02   Deportes   Oeste       2.0           254.90   \n",
+              "2         3  2023-01-03      Hogar  Centro      43.0           273.93   \n",
+              "\n",
+              "   descuento_pct   costo  vendedor_exp_años  satisfaccion_cliente  \\\n",
+              "0            3.7  206.85               18.0                   5.0   \n",
+              "1           22.1    9.30                2.0                   5.0   \n",
+              "2            7.1   93.23               11.0                   3.0   \n",
+              "\n",
+              "       ingreso  ganancia  venta_exitosa  \n",
+              "0  17055.61596   7540.52              1  \n",
+              "1    397.13420    378.53              1  \n",
+              "2  10942.68171   6933.79              1  "
+            ],
+            "text/html": [
+              "\n",
+              "  <div id=\"df-d390f56c-8286-4996-bdd2-0f4460c22147\" class=\"colab-df-container\">\n",
+              "    <div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>id_venta</th>\n",
+              "      <th>fecha</th>\n",
+              "      <th>categoria</th>\n",
+              "      <th>region</th>\n",
+              "      <th>cantidad</th>\n",
+              "      <th>precio_unitario</th>\n",
+              "      <th>descuento_pct</th>\n",
+              "      <th>costo</th>\n",
+              "      <th>vendedor_exp_años</th>\n",
+              "      <th>satisfaccion_cliente</th>\n",
+              "      <th>ingreso</th>\n",
+              "      <th>ganancia</th>\n",
+              "      <th>venta_exitosa</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>1</td>\n",
+              "      <td>2023-01-01</td>\n",
+              "      <td>Alimentos</td>\n",
+              "      <td>Este</td>\n",
+              "      <td>46.0</td>\n",
+              "      <td>385.02</td>\n",
+              "      <td>3.7</td>\n",
+              "      <td>206.85</td>\n",
+              "      <td>18.0</td>\n",
+              "      <td>5.0</td>\n",
+              "      <td>17055.61596</td>\n",
+              "      <td>7540.52</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>2</td>\n",
+              "      <td>2023-01-02</td>\n",
+              "      <td>Deportes</td>\n",
+              "      <td>Oeste</td>\n",
+              "      <td>2.0</td>\n",
+              "      <td>254.90</td>\n",
+              "      <td>22.1</td>\n",
+              "      <td>9.30</td>\n",
+              "      <td>2.0</td>\n",
+              "      <td>5.0</td>\n",
+              "      <td>397.13420</td>\n",
+              "      <td>378.53</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>3</td>\n",
+              "      <td>2023-01-03</td>\n",
+              "      <td>Hogar</td>\n",
+              "      <td>Centro</td>\n",
+              "      <td>43.0</td>\n",
+              "      <td>273.93</td>\n",
+              "      <td>7.1</td>\n",
+              "      <td>93.23</td>\n",
+              "      <td>11.0</td>\n",
+              "      <td>3.0</td>\n",
+              "      <td>10942.68171</td>\n",
+              "      <td>6933.79</td>\n",
+              "      <td>1</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>\n",
+              "    <div class=\"colab-df-buttons\">\n",
+              "\n",
+              "  <div class=\"colab-df-container\">\n",
+              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-d390f56c-8286-4996-bdd2-0f4460c22147')\"\n",
+              "            title=\"Convert this dataframe to an interactive table.\"\n",
+              "            style=\"display:none;\">\n",
+              "\n",
+              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
+              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
+              "  </svg>\n",
+              "    </button>\n",
+              "\n",
+              "  <style>\n",
+              "    .colab-df-container {\n",
+              "      display:flex;\n",
+              "      gap: 12px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert {\n",
+              "      background-color: #E8F0FE;\n",
+              "      border: none;\n",
+              "      border-radius: 50%;\n",
+              "      cursor: pointer;\n",
+              "      display: none;\n",
+              "      fill: #1967D2;\n",
+              "      height: 32px;\n",
+              "      padding: 0 0 0 0;\n",
+              "      width: 32px;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-convert:hover {\n",
+              "      background-color: #E2EBFA;\n",
+              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
+              "      fill: #174EA6;\n",
+              "    }\n",
+              "\n",
+              "    .colab-df-buttons div {\n",
+              "      margin-bottom: 4px;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert {\n",
+              "      background-color: #3B4455;\n",
+              "      fill: #D2E3FC;\n",
+              "    }\n",
+              "\n",
+              "    [theme=dark] .colab-df-convert:hover {\n",
+              "      background-color: #434B5C;\n",
+              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
+              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
+              "      fill: #FFFFFF;\n",
+              "    }\n",
+              "  </style>\n",
+              "\n",
+              "    <script>\n",
+              "      const buttonEl =\n",
+              "        document.querySelector('#df-d390f56c-8286-4996-bdd2-0f4460c22147 button.colab-df-convert');\n",
+              "      buttonEl.style.display =\n",
+              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
+              "\n",
+              "      async function convertToInteractive(key) {\n",
+              "        const element = document.querySelector('#df-d390f56c-8286-4996-bdd2-0f4460c22147');\n",
+              "        const dataTable =\n",
+              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
+              "                                                    [key], {});\n",
+              "        if (!dataTable) return;\n",
+              "\n",
+              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
+              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
+              "          + ' to learn more about interactive tables.';\n",
+              "        element.innerHTML = '';\n",
+              "        dataTable['output_type'] = 'display_data';\n",
+              "        await google.colab.output.renderOutput(dataTable, element);\n",
+              "        const docLink = document.createElement('div');\n",
+              "        docLink.innerHTML = docLinkHtml;\n",
+              "        element.appendChild(docLink);\n",
+              "      }\n",
+              "    </script>\n",
+              "  </div>\n",
+              "\n",
+              "\n",
+              "    </div>\n",
+              "  </div>\n"
+            ],
+            "application/vnd.google.colaboratory.intrinsic+json": {
+              "type": "dataframe",
+              "variable_name": "df_raw",
+              "summary": "{\n  \"name\": \"df_raw\",\n  \"rows\": 600,\n  \"fields\": [\n    {\n      \"column\": \"id_venta\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 173,\n        \"min\": 1,\n        \"max\": 600,\n        \"num_unique_values\": 600,\n        \"samples\": [\n          111,\n          420,\n          566\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"fecha\",\n      \"properties\": {\n        \"dtype\": \"object\",\n        \"num_unique_values\": 600,\n        \"samples\": [\n          \"2023-04-21\",\n          \"2024-02-24\",\n          \"2024-07-19\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"categoria\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 5,\n        \"samples\": [\n          \"Deportes\",\n          \"Electr\\u00f3nica\",\n          \"Hogar\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"region\",\n      \"properties\": {\n        \"dtype\": \"category\",\n        \"num_unique_values\": 5,\n        \"samples\": [\n          \"Oeste\",\n          \"Sur\",\n          \"Centro\"\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"cantidad\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 13.827107441335915,\n        \"min\": 1.0,\n        \"max\": 49.0,\n        \"num_unique_values\": 49,\n        \"samples\": [\n          34.0,\n          13.0,\n          28.0\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"precio_unitario\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 137.39121799308148,\n        \"min\": 5.16,\n        \"max\": 497.76,\n        \"num_unique_values\": 598,\n        \"samples\": [\n          302.3,\n          194.35,\n          237.81\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"descuento_pct\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 8.894047056480439,\n        \"min\": 0.0,\n        \"max\": 30.0,\n        \"num_unique_values\": 253,\n        \"samples\": [\n          20.2,\n          22.0,\n          20.5\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"costo\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 85.6684208018449,\n        \"min\": 2.13,\n        \"max\": 299.86,\n        \"num_unique_values\": 596,\n        \"samples\": [\n          194.09,\n          191.69,\n          59.05\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"vendedor_exp_a\\u00f1os\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 5.32398550263692,\n        \"min\": 1.0,\n        \"max\": 19.0,\n        \"num_unique_values\": 19,\n        \"samples\": [\n          18.0,\n          4.0,\n          3.0\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"satisfaccion_cliente\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 1.3938520966201837,\n        \"min\": 1.0,\n        \"max\": 5.0,\n        \"num_unique_values\": 5,\n        \"samples\": [\n          3.0,\n          4.0,\n          1.0\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"ingreso\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 4510.774749118954,\n        \"min\": 59.80260000000001,\n        \"max\": 21596.54,\n        \"num_unique_values\": 600,\n        \"samples\": [\n          10944.4692,\n          4718.095200000001,\n          1256.45917\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"ganancia\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 4426.612920113116,\n        \"min\": -11124.05,\n        \"max\": 18316.08,\n        \"num_unique_values\": 600,\n        \"samples\": [\n          1853.15,\n          880.67,\n          63.26\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"venta_exitosa\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": 0,\n        \"min\": 0,\n        \"max\": 1,\n        \"num_unique_values\": 2,\n        \"samples\": [\n          0,\n          1\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    }\n  ]\n}"
+            }
+          },
+          "metadata": {},
+          "execution_count": 3
+        }
+      ],
+      "source": [
+        "import pandas as pd\n",
+        "import numpy as np\n",
+        "\n",
+        "np.random.seed(42)\n",
+        "N = 600  # 600 registros\n",
+        "\n",
+        "categorias = ['Electrónica', 'Ropa', 'Hogar', 'Alimentos', 'Deportes']\n",
+        "regiones   = ['Norte', 'Sur', 'Este', 'Oeste', 'Centro']\n",
+        "\n",
+        "df_raw = pd.DataFrame({\n",
+        "    'id_venta':       range(1, N + 1),\n",
+        "    'fecha':          pd.date_range('2023-01-01', periods=N, freq='D').strftime('%Y-%m-%d'),\n",
+        "    'categoria':      np.random.choice(categorias, N),\n",
+        "    'region':         np.random.choice(regiones, N),\n",
+        "    'cantidad':       np.random.randint(1, 50, N).astype(float),\n",
+        "    'precio_unitario':np.round(np.random.uniform(5, 500, N), 2),\n",
+        "    'descuento_pct':  np.round(np.random.uniform(0, 30, N), 1),\n",
+        "    'costo':          np.round(np.random.uniform(2, 300, N), 2),\n",
+        "    'vendedor_exp_años': np.random.randint(1, 20, N).astype(float),\n",
+        "    'satisfaccion_cliente': np.random.randint(1, 6, N).astype(float),\n",
+        "})\n",
+        "\n",
+        "# Calcular ganancia (variable objetivo)\n",
+        "df_raw['ingreso'] = df_raw['cantidad'] * df_raw['precio_unitario'] * (1 - df_raw['descuento_pct'] / 100)\n",
+        "df_raw['ganancia'] = np.round(df_raw['ingreso'] - (df_raw['cantidad'] * df_raw['costo']), 2)\n",
+        "# Target binario: venta exitosa = ganancia > 0\n",
+        "df_raw['venta_exitosa'] = (df_raw['ganancia'] > 0).astype(int)\n",
+        "\n",
+        "# Introducir valores faltantes (~5%)\n",
+        "for col in ['cantidad', 'descuento_pct', 'satisfaccion_cliente', 'vendedor_exp_años']:\n",
+        "    idx = np.random.choice(df_raw.index, size=int(N * 0.05), replace=False)\n",
+        "    df_raw.loc[idx, col] = np.nan\n",
+        "\n",
+        "# Guardar CSV\n",
+        "df_raw.to_csv('ventas_dataset.csv', index=False)\n",
+        "\n",
+        "print(f\"✅ Dataset generado: {df_raw.shape[0]} filas × {df_raw.shape[1]} columnas\")\n",
+        "print(f\"\\n📋 Primeras filas:\")\n",
+        "df_raw.head(3)"
+      ]
+    }
+  ]
+}
