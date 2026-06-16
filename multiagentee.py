@@ -203,6 +203,22 @@ Listá brevemente: columnas con nulos, columnas categóricas a codificar y colum
 agente1 = AgenteNormalizador(llm)
 df_limpio, reporte_ag1 = agente1.ejecutar('ventas_dataset.csv')
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 """AGENTE 2 — Entrenador
 > **Función:** Aplica validación cruzada, entrena modelos y selecciona el mejor
 """
@@ -323,3 +339,98 @@ El TARGET es 'venta_exitosa' (binario: 0/1).
 
         return self.mejor_modelo, self.metricas
 
+# -- Ejecutar Agente 2 -------------------------------------------------------
+agente2 = AgenteEntrenador(llm)
+modelo, metricas = agente2.ejecutar(df_limpio)
+
+"""---
+AGENTE 3 - Comunicador
+> **Función:** Genera un reporte completo en lenguaje natural con el LLM
+"""
+
+from IPython.display import Markdown, display
+
+class AgenteComunicador:
+    """AGENTE 3: recibe métricas + info del pipeline y genera reporte en lenguaje natural."""
+
+    def __init__(self, llm):
+        self.llm = llm
+
+    def generar_reporte(self, reporte_ag1: dict, metricas: dict) -> str:
+        contexto = json.dumps({
+            'normalizacion': reporte_ag1,
+            'entrenamiento': metricas,
+        }, indent=2, ensure_ascii=False)
+
+        resp = self.llm.invoke([
+            HumanMessage(content=contexto)
+        ])
+        return resp.content
+
+    def ejecutar(self, reporte_ag1: dict, metricas: dict):
+        print("="*60)
+        print(" AGENTE 3 - COMUNICADOR")
+        print("="*60)
+        print("\n Generando reporte en lenguaje natural...\n")
+
+        reporte = self.generar_reporte(reporte_ag1, metricas)
+
+        # Mostrar como Markdown renderizado
+        display(Markdown(reporte))
+
+        # Guardar en archivo
+        with open('reporte_final.md', 'w', encoding='utf-8') as f:
+            f.write(reporte)
+        print("\n Reporte guardado: reporte_final.md")
+        print("="*60)
+        return reporte
+
+# -- Ejecutar Agente 3 -------------------------------------------------------
+agente3 = AgenteComunicador(llm)
+reporte_final = agente3.ejecutar(reporte_ag1, metricas)
+
+"""---
+Visualizaciones extra
+"""
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import ConfusionMatrixDisplay
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+# -- Comparación de modelos --------------------------------------------------
+nombres  = list(metricas['todos_modelos'].keys())
+f1_means = [v['cv_f1_mean'] for v in metricas['todos_modelos'].values()]
+f1_stds  = [v['cv_f1_std']  for v in metricas['todos_modelos'].values()]
+colores  = ['#4CAF50' if n == metricas['modelo_seleccionado'] else '#90CAF9' for n in nombres]
+
+bars = axes[0].barh(nombres, f1_means, xerr=f1_stds, color=colores, capsize=5, edgecolor='white')
+axes[0].set_xlabel('F1 Score (CV)')
+axes[0].set_title('Comparación de Modelos (CV F1)', fontweight='bold')
+axes[0].set_xlim(0, 1)
+for bar, val in zip(bars, f1_means):
+    axes[0].text(val + 0.01, bar.get_y() + bar.get_height()/2,
+                 f'{val:.4f}', va='center', fontsize=10)
+
+# -- Matriz de confusión -----------------------------------------------------
+feature_cols = metricas['features']
+from sklearn.model_selection import train_test_split
+X = df_limpio[feature_cols]
+y = df_limpio['venta_exitosa']
+_, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+y_pred = modelo.predict(X_test)
+
+ConfusionMatrixDisplay.from_predictions(
+    y_test, y_pred, ax=axes[1],
+    display_labels=['No Exitosa', 'Exitosa'],
+    colorbar=False, cmap='Blues'
+)
+axes[1].set_title('Matriz de Confusion - Test Set', fontweight='bold')
+
+plt.suptitle(f'Pipeline 3 Agentes | Modelo: {metricas["modelo_seleccionado"]}',
+             fontsize=13, fontweight='bold', y=1.02)
+plt.tight_layout()
+plt.savefig('visualizaciones.png', dpi=150, bbox_inches='tight')
+plt.show()
+print(" Visualizaciones guardadas: visualizaciones.png")
